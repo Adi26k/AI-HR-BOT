@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>AI HR Bot</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to the AI HR Bot</h1>
+    </header>
+    <main>
+        <section>
+            <h2>How can we assist you today?</h2>
+            <form id="query-form">
+                <input type="text" id="user-query" placeholder="Type your question here..." required>
+                <button type="submit">Ask</button>
+            </form>
+            <div id="response"></div>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>
