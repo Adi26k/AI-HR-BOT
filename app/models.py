@@ -1,22 +1,66 @@
-from flask_sqlalchemy import SQLAlchemy
+from typing import List, Optional, Dict, Any
+from datetime import datetime
+from pydantic import BaseModel, Field
+from azure.cosmos import CosmosClient, PartitionKey
+import os
+cosmos_client = CosmosClient(
+url=os.getenv('COSMOS_DB_URL'),
+credential=os.getenv('COSMOS_DB_KEY')
+)
+database_name = 'HrResumeParser'
+database = cosmos_client.create_database_if_not_exists(database_name)
+# -------------------------------
+# JobPostings Collection Models
+# -------------------------------
 
-db = SQLAlchemy()
+class ExtractedRequirements(BaseModel):
+    skills: List[str]
+    experience: List[str] = None
+    education: List[str] = None
+    additional_requirements: List[str]
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128))
+class JobPostings(BaseModel):
+    id: str = Field(alias="id")
+    hr_id: str
+    job_title: str
+    job_description: str
+    #jd_pdf_url: strS
+    extracted_requirements: ExtractedRequirements
+    vector_embedding: List[float]
+    #pinecone_id: str
+    #metadata: Dict[str, Any]
 
-    def __repr__(self):
-        return f'<User {self.username}>'
+# -------------------------------
+# Candidates Collection Model
+# -------------------------------
 
-class JobPosting(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    company = db.Column(db.String(100), nullable=False)
-    location = db.Column(db.String(100), nullable=False)
+class Candidate(BaseModel):
+    id: str = Field(alias="_id")
+    name: str
+    email: str
+    metadata: Dict[str, Any] = {}
 
-    def __repr__(self):
-        return f'<JobPosting {self.title}>'
+# -------------------------------
+# Applications Collection Models
+# -------------------------------
+
+class ExtractedData(BaseModel):
+    skills: List[str]
+    experience: Optional[str] = None
+    education: Optional[str] = None
+    soft_skills: List[str] = []
+
+class Scoring(BaseModel):
+    match_score: float
+    justification: str
+
+class Application(BaseModel):
+    id: str = Field(alias="_id")
+    candidate_id: str
+    job_id: str
+    resume_pdf_url: str
+    resume_text: str
+    extracted_data: ExtractedData
+    vector_embedding: List[float]
+    scoring: Scoring
+    upload_date: datetime
