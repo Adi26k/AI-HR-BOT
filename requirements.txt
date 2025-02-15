@@ -1,0 +1,14 @@
+requests
+python-dotenv
+Werkzeug
+PyYAML
+openai
+autogen-agentchat
+autogen-ext[azure,openai]
+boto3
+fastapi
+uvicorn
+pdfplumber
+azure-cosmos
+python-multipart
+jinja2
