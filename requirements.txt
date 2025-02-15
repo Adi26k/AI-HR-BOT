@@ -12,3 +12,4 @@ pdfplumber
 azure-cosmos
 python-multipart
 jinja2
+gunicorn
