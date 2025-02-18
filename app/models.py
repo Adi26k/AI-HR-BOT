@@ -48,19 +48,16 @@ class ExtractedData(BaseModel):
     skills: List[str]
     experience: Optional[str] = None
     education: Optional[str] = None
-    soft_skills: List[str] = []
+    soft_skills: List[str] 
 
 class Scoring(BaseModel):
     match_score: float
     justification: str
 
 class Application(BaseModel):
-    id: str = Field(alias="_id")
+    id: str = Field(alias="id")
     candidate_id: str
     job_id: str
-    resume_pdf_url: str
-    resume_text: str
     extracted_data: ExtractedData
     vector_embedding: List[float]
     scoring: Scoring
-    upload_date: datetime
