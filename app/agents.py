@@ -61,6 +61,7 @@ async def application_agent(text,metadata):
         [TextMessage(content=f"""
             Extract key details from resume in given format. 
             Generate unique id for the candiate id wherever required.
+             The format of job id shoud be in the format of "app_id_1
             {text}
         """, source="user")],
         cancellation_token=CancellationToken()
@@ -83,6 +84,7 @@ async def job_posting_agent(text):
         [TextMessage(content=f"""
             Generate job posting from job description: based on given format. 
             Generate unique id for the job posting wherever required.
+            The format of job id shoud be in the format of "job_id_1"
             {text}
         """, source="user")],
         cancellation_token=CancellationToken()

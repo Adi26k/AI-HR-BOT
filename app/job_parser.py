@@ -23,7 +23,7 @@ async def process_job_posting(file):
         text = extract_text_from_pdf(file_bytes)
         
         response_dict, job_posting_embedding = await job_posting_agent(text)
-        #print("RESPONSE DICT",response_dict)
+        print("RESPONSE DICT APP",response_dict)
         # Create JobPostings instance
         job_posting = JobPostings(
             id=response_dict.get("id"),
@@ -42,7 +42,6 @@ async def process_job_posting(file):
             upload_date=response_dict.get("upload_date", None),
             metadata=response_dict.get("metadata", {})
         )
-
         vector_embedding_policy = {
           "vectorEmbeddings": [ 
         { 
