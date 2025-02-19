@@ -43,6 +43,7 @@ async def process_application(file,jobid):
         }, 
             ]
         }
+        print("lenght",len(appllication.vector_embedding))
         container = database.create_container_if_not_exists(
           id='Applications',
           vector_embedding_policy=vector_embedding_policy,
@@ -52,6 +53,7 @@ async def process_application(file,jobid):
         application_details=container.upsert_item(appllication.model_dump(by_alias=True))
         # Store the response dictionary as extracted_requirements
         return {
+            "id": application_details.get("id"),
             "match_score": application_details.get("scoring").get('match_score'),
             "justification": application_details.get("scoring").get('justification'),
         }

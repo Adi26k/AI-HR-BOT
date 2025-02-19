@@ -1,33 +1,119 @@
+/* Global Styles */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
+    color: #333;
 }
 
+/* Header Styles */
 header {
     background: #35424a;
     color: #ffffff;
-    padding: 10px 0;
+    padding: 20px;
     text-align: center;
+    font-size: 1.8rem;
+    font-weight: 600;
 }
 
-h1 {
-    margin: 0;
-}
-
+/* Main Container */
 .container {
-    width: 80%;
+    width: 90%;
+    max-width: 1200px;
     margin: auto;
+    overflow: hidden;
+    padding: 20px 0;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
     overflow: hidden;
 }
 
+/* Table Header */
+thead {
+    background: #007bff;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Table Cells */
+td, th {
+    padding: 14px;
+    text-align: left;
+}
+
+/* Alternating Row Colors */
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Hover Effect */
+tbody tr:hover {
+    background-color: #e0e0e0;
+    transition: 0.3s ease-in-out;
+}
+
+/* Justification Column Styling */
+td:last-child {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #444;
+}
+
+/* Application ID Column */
+td:first-child {
+    font-weight: 500;
+    color: #007bff;
+}
+
+/* Button Styling */
+button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+/* Footer Styles */
 footer {
     background: #35424a;
-    color: #ffffff;
+    color: white;
     text-align: center;
-    padding: 10px 0;
-    position: relative;
-    bottom: 0;
-    width: 100%;
+    padding: 15px 0;
+    margin-top: 30px;
+    font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    header {
+        font-size: 1.5rem;
+    }
+
+    .container {
+        width: 95%;
+    }
 }

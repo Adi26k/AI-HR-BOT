@@ -38,6 +38,13 @@
             border: 1px solid #c3e6cb;
             border-radius: 5px;
         }
+        .best-job {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -63,11 +70,20 @@
             <div id="result-{{ job['id'] }}" class="result" style="display: none;">
                 <h5>Match Score: <span id="match-score-{{ job['id'] }}"></span></h5>
                 <p><strong>Justification:</strong> <span id="justification-{{ job['id'] }}"></span></p>
+                <button class="btn btn-secondary mt-2" id="find-best-job-{{ job['id'] }}" onclick="findBestJob('{{ job.id }}')">Find Best Job</button>
+                <div id="best-job-{{ job['id'] }}" class="best-job" style="display: none;">
+                    <h5>Best Job:</h5>
+                    <p><strong>Job ID:</strong> <span id="best-job-id-{{ job['id'] }}"></span></p>
+                    <p><strong>Job Title:</strong> <span id="best-job-title-{{ job['id'] }}"></span></p>
+                    <p><strong>Match Score:</strong> <span id="best-job-score-{{ job['id'] }}"></span></p>
+                </div>
             </div>
         </div>
         {% endfor %}
     </main>
     <script>
+        let applicationId = '';
+
         function toggleJobDetails(jobId) {
             const details = document.getElementById(`job-details-${jobId}`);
             document.querySelectorAll('.job-details').forEach(el => {
@@ -100,8 +116,24 @@
                 document.getElementById(`match-score-${jobId}`).textContent = result.match_score;
                 document.getElementById(`justification-${jobId}`).textContent = result.justification;
                 document.getElementById(`result-${jobId}`).style.display = 'block';
+
+                // Store the application ID for later use
+                applicationId = result.id;
+
+                // Update the Find Best Job button with the application ID
+                const findBestJobButton = document.getElementById(`find-best-job-${jobId}`);
+                findBestJobButton.setAttribute('onclick', `findBestJob('${applicationId}', '${jobId}')`);
             });
         });
+
+        async function findBestJob(applicationId, jobId) {
+            const response = await fetch(`/find_best_job?application_id=${applicationId}`);
+            const bestJob = await response.json();
+            document.getElementById(`best-job-id-${jobId}`).textContent = bestJob['Job ID'];
+            document.getElementById(`best-job-title-${jobId}`).textContent = bestJob['Job Title'];
+            document.getElementById(`best-job-score-${jobId}`).textContent = bestJob['Match Score'];
+            document.getElementById(`best-job-${jobId}`).style.display = 'block';
+        }
     </script>
 </body>
 </html>
