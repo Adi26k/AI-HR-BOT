@@ -1,30 +1,426 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <title>AI HR Bot</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI HR Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Fix: Use the correct Lucide CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+    }
+    .typing-indicator span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #9ca3af;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+    .typing-indicator span:nth-child(1) { animation-delay: 0ms; }
+    .typing-indicator span:nth-child(2) { animation-delay: 150ms; }
+    .typing-indicator span:nth-child(3) { animation-delay: 300ms; }
+    
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-6px); }
+    }
+  </style>
 </head>
-<body>
-    <header class="bg-primary text-white text-center py-3">
-        <h1>Welcome to the AI HR Bot</h1>
-    </header>
-    <main class="container mt-5">
-        <section>
-            <h2>How can we assist you today?</h2>
-            <form id="query-form" class="form-inline my-4">
-                <input type="text" id="user-query" class="form-control mr-2" placeholder="Type your question here..." required>
-                <button type="submit" class="btn btn-primary">Ask</button>
-            </form>
-            <div id="response" class="mt-3"></div>
-            <a href="{{ url_for('upload') }}" class="btn btn-success mt-4">Upload Resume</a>
-        </section>
-    </main>
-    <script src="{{ url_for('static', path='js/scripts.js') }}"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
+    <div class="container mx-auto py-6 px-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <i data-lucide="message-square" class="h-8 w-8"></i>
+        <h1 class="text-2xl font-bold">AI HR Assistant</h1>
+      </div>
+      
+      <!-- User Type Toggle -->
+      <div class="bg-white/20 rounded-full p-1 backdrop-blur-sm">
+        <div class="flex">
+          <button
+            id="candidate-btn"
+            class="px-4 py-2 rounded-full flex items-center transition-all bg-white text-indigo-700 shadow-sm"
+          >
+            <i data-lucide="user" class="h-4 w-4 mr-2"></i>
+            Candidate
+          </button>
+          <button
+            id="hr-btn"
+            class="px-4 py-2 rounded-full flex items-center transition-all text-white hover:bg-white/10"
+          >
+            <i data-lucide="building-2" class="h-4 w-4 mr-2"></i>
+            HR
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto py-8 px-4">
+    <div class="max-w-4xl mx-auto">
+      <!-- Welcome Card -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-3">Welcome to the AI HR Assistant</h2>
+        <p id="welcome-text" class="text-gray-600">
+          I'm here to help with all your job search questions. 
+          Ask me about job listings, application tips, or interview preparation.
+        </p>
+        <div class="mt-4 flex items-center">
+          <i data-lucide="briefcase" class="h-5 w-5 text-indigo-600 mr-2"></i>
+          <span id="mode-indicator" class="text-sm text-indigo-600 font-medium">
+            Currently in Candidate mode
+          </span>
+        </div>
+      </div>
+
+      <!-- Chat Container -->
+      <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <!-- Messages Area -->
+        <div id="messages-container" class="h-[400px] overflow-y-auto p-4 bg-gray-50">
+          <div id="empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-500">
+            <i data-lucide="message-square" class="h-12 w-12 text-gray-300 mb-3"></i>
+            <p class="mb-2">No messages yet</p>
+            <p class="text-sm">Try asking something like "Show me all jobs"</p>
+          </div>
+          <div id="messages" class="space-y-4 hidden"></div>
+        </div>
+
+        <!-- Input Area -->
+        <form id="chat-form" class="p-4 border-t border-gray-200">
+          <div class="flex items-center">
+            <input
+              type="text"
+              id="user-input"
+              placeholder="Type your question here..."
+              class="flex-1 border border-gray-300 rounded-l-full py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+            <button
+              type="submit"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-r-full py-3 px-6 transition-colors duration-200 flex items-center"
+            >
+              <i data-lucide="send" class="h-5 w-5"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-gray-800 text-white py-6 mt-12">
+    <div class="container mx-auto px-4 text-center">
+      <p>© 2025 AI HR Assistant. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+    
+    // Get DOM elements
+    const candidateBtn = document.getElementById('candidate-btn');
+    const hrBtn = document.getElementById('hr-btn');
+    const welcomeText = document.getElementById('welcome-text');
+    const modeIndicator = document.getElementById('mode-indicator');
+    const messagesContainer = document.getElementById('messages-container');
+    const emptyState = document.getElementById('empty-state');
+    const messages = document.getElementById('messages');
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+    
+    // Current user type
+    let userType = 'Candidate';
+    
+    // API URL from environment variable or default
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+      ? 'http://127.0.0.1:8000' 
+      : 'https://your-production-api-url.com';
+    
+    // Toggle user type
+    candidateBtn.addEventListener('click', () => {
+      userType = 'Candidate';
+      updateUserTypeUI();
+    });
+    
+    hrBtn.addEventListener('click', () => {
+      userType = 'HR';
+      updateUserTypeUI();
+    });
+    
+    // Update UI based on user type
+    function updateUserTypeUI() {
+      if (userType === 'Candidate') {
+        candidateBtn.classList.add('bg-white', 'text-indigo-700', 'shadow-sm');
+        candidateBtn.classList.remove('text-white', 'hover:bg-white/10');
+        hrBtn.classList.remove('bg-white', 'text-indigo-700', 'shadow-sm');
+        hrBtn.classList.add('text-white', 'hover:bg-white/10');
+        welcomeText.textContent = "I'm here to help with all your job search questions. Ask me about job listings, application tips, or interview preparation.";
+      } else {
+        hrBtn.classList.add('bg-white', 'text-indigo-700', 'shadow-sm');
+        hrBtn.classList.remove('text-white', 'hover:bg-white/10');
+        candidateBtn.classList.remove('bg-white', 'text-indigo-700', 'shadow-sm');
+        candidateBtn.classList.add('text-white', 'hover:bg-white/10');
+        welcomeText.textContent = "I'm here to help with all your recruitment needs. Ask me about candidates, job postings, or hiring processes.";
+      }
+      modeIndicator.textContent = `Currently in ${userType} mode`;
+    }
+    
+    // Format timestamp
+    function formatTime(date) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    // Render a value based on its type
+    function renderValue(value, indent = 0) {
+      if (value === null || value === undefined) {
+        return "N/A";
+      } else if (typeof value === 'object' && !Array.isArray(value)) {
+        // For nested objects
+        const container = document.createElement('div');
+        container.className = `ml-${indent} mt-2`;
+        
+        Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+          // Skip keys that start with underscore
+          if (nestedKey.startsWith('_')) return;
+          
+          const nestedItem = document.createElement('div');
+          nestedItem.className = 'mb-2';
+          
+          const nestedKeySpan = document.createElement('span');
+          nestedKeySpan.className = 'font-semibold text-gray-700';
+          nestedKeySpan.textContent = `${nestedKey}: `;
+          
+          nestedItem.appendChild(nestedKeySpan);
+          
+          if (typeof nestedValue === 'object') {
+            // For deeply nested objects or arrays
+            const nestedValueContainer = renderValue(nestedValue, indent + 2);
+            nestedItem.appendChild(nestedValueContainer);
+          } else {
+            const nestedValueSpan = document.createElement('span');
+            nestedValueSpan.className = 'text-gray-600';
+            nestedValueSpan.textContent = String(nestedValue);
+            nestedItem.appendChild(nestedValueSpan);
+          }
+          
+          container.appendChild(nestedItem);
+        });
+        
+        return container;
+      } else if (Array.isArray(value)) {
+        // For arrays
+        const list = document.createElement('ul');
+        list.className = `list-disc ml-${indent + 4} mt-1`;
+        
+        value.forEach(item => {
+          const listItem = document.createElement('li');
+          listItem.className = 'text-gray-600 mb-1';
+          
+          if (typeof item === 'object') {
+            listItem.appendChild(renderValue(item, indent + 2));
+          } else {
+            listItem.textContent = String(item);
+          }
+          
+          list.appendChild(listItem);
+        });
+        
+        return list;
+      } else {
+        // For primitive values
+        const valueSpan = document.createElement('span');
+        valueSpan.className = 'text-gray-600';
+        valueSpan.textContent = String(value);
+        return valueSpan;
+      }
+    }
+    
+    // Add a message to the chat
+    function addMessage(text, sender, timestamp) {
+      if (messages.childElementCount === 0) {
+        emptyState.classList.add('hidden');
+        messages.classList.remove('hidden');
+      }
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+      
+      const messageBubble = document.createElement('div');
+      messageBubble.className = `max-w-[80%] rounded-2xl px-4 py-3 ${
+        sender === 'user' 
+          ? 'bg-indigo-600 text-white rounded-tr-none' 
+          : 'bg-gray-200 text-gray-800 rounded-tl-none'
+      }`;
+      
+      if (sender === 'user') {
+        const textElement = document.createElement('p');
+        textElement.textContent = text;
+        messageBubble.appendChild(textElement);
+      } else {
+        try {
+          const data = JSON.parse(text);
+          
+          if (Array.isArray(data)) {
+            const responseList = document.createElement('div');
+            responseList.className = 'response-list space-y-4';
+            
+            data.forEach(item => {
+              const responseItem = document.createElement('div');
+              responseItem.className = 'response-item bg-white rounded-lg p-4 shadow-sm';
+              
+              Object.entries(item).forEach(([key, value]) => {
+                // Skip keys that start with underscore
+                if (key.startsWith('_')) return;
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'mb-3';
+                
+                const keySpan = document.createElement('span');
+                keySpan.className = 'font-semibold text-gray-700';
+                keySpan.textContent = `${key}: `;
+                
+                itemDiv.appendChild(keySpan);
+                itemDiv.appendChild(renderValue(value));
+                responseItem.appendChild(itemDiv);
+              });
+              
+              responseList.appendChild(responseItem);
+            });
+            
+            messageBubble.appendChild(responseList);
+          } else {
+            const responseItem = document.createElement('div');
+            responseItem.className = 'response-item bg-white rounded-lg p-4 shadow-sm';
+            
+            Object.entries(data).forEach(([key, value]) => {
+              // Skip keys that start with underscore
+              if (key.startsWith('_')) return;
+              
+              const itemDiv = document.createElement('div');
+              itemDiv.className = 'mb-3';
+              
+              const keySpan = document.createElement('span');
+              keySpan.className = 'font-semibold text-gray-700';
+              keySpan.textContent = `${key}: `;
+              
+              itemDiv.appendChild(keySpan);
+              itemDiv.appendChild(renderValue(value));
+              responseItem.appendChild(itemDiv);
+            });
+            
+            messageBubble.appendChild(responseItem);
+          }
+        } catch (e) {
+          // If not valid JSON, just return the text
+          const textElement = document.createElement('p');
+          textElement.textContent = text;
+          messageBubble.appendChild(textElement);
+        }
+      }
+      
+      const timeDiv = document.createElement('div');
+      timeDiv.className = `text-xs mt-1 ${
+        sender === 'user' ? 'text-indigo-200' : 'text-gray-500'
+      }`;
+      timeDiv.textContent = formatTime(timestamp);
+      
+      messageBubble.appendChild(timeDiv);
+      messageDiv.appendChild(messageBubble);
+      messages.appendChild(messageDiv);
+      
+      // Scroll to bottom
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Add loading indicator
+    function addLoadingIndicator() {
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'flex justify-start';
+      loadingDiv.id = 'loading-indicator';
+      
+      const loadingBubble = document.createElement('div');
+      loadingBubble.className = 'bg-gray-200 text-gray-800 rounded-2xl rounded-tl-none px-4 py-3';
+      
+      const typingIndicator = document.createElement('div');
+      typingIndicator.className = 'typing-indicator';
+      
+      for (let i = 0; i < 3; i++) {
+        const dot = document.createElement('span');
+        typingIndicator.appendChild(dot);
+      }
+      
+      loadingBubble.appendChild(typingIndicator);
+      loadingDiv.appendChild(loadingBubble);
+      messages.appendChild(loadingDiv);
+      
+      // Scroll to bottom
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Remove loading indicator
+    function removeLoadingIndicator() {
+      const loadingIndicator = document.getElementById('loading-indicator');
+      if (loadingIndicator) {
+        loadingIndicator.remove();
+      }
+    }
+    
+    // Handle form submission
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const input = userInput.value.trim();
+      if (!input) return;
+      
+      // Add user message
+      addMessage(input, 'user', new Date());
+      
+      // Clear input
+      userInput.value = '';
+      
+      // Show loading indicator
+      if (messages.childElementCount === 0) {
+        emptyState.classList.add('hidden');
+        messages.classList.remove('hidden');
+      }
+      addLoadingIndicator();
+      
+      try {
+        const response = await fetch(`${API_URL}/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_type: userType,
+            user_input: input
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        
+        const data = await response.json();
+        
+        // Remove loading indicator
+        removeLoadingIndicator();
+        
+        // Add bot response
+        addMessage(JSON.stringify(data), 'bot', new Date());
+      } catch (error) {
+        console.error('Error:', error);
+        
+        // Remove loading indicator
+        removeLoadingIndicator();
+        
+        // Add error message
+        addMessage('Sorry, there was an error processing your request. Please try again.', 'bot', new Date());
+      }
+    });
+  </script>
 </body>
 </html>
