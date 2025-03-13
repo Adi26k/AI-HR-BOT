@@ -221,6 +221,7 @@ PlannerAgent = AssistantAgent(
     system_message="""You are responsible for directing requests to the correct agent.
     
     - If the user is **HR** and wants to create a job post → assign to `JobParser`.
+    - If the user is **HR** and wants to rank applications → assign to `SupporterAgent`.
     - If the user is a **Candidate** and mentions a job ID (e.g., job_1234) → forward to `ResumeParser`.
     - If the user is a **Candidate** and is looking for jobs or wants to know best job → forward to `SupportAgent`.
     - Prevent redundant agent loops.
